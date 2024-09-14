@@ -16,10 +16,10 @@ def get_atmos_properties(h_press_ft):
     hgeo_max = df_atmos["Hgeo_ft"].max()
 
     # Test h within table
-    if hgeo_min > h_press_ft:
+    if hgeo_min >= h_press_ft:
         print("ERROR: Altitude too low out of range")
         exit()
-    elif hgeo_max < h_press_ft:
+    elif hgeo_max <= h_press_ft:
         print("ERROR: Altitude too high out of range")
         exit()
 

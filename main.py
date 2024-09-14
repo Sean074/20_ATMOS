@@ -1,10 +1,9 @@
-import pandas as pd
 import menue
 
 MENU_PROMPT = """-- Menue --
 
 Atmospheric Properties
-1.1) Given alt
+1.1) Given pressure altitude
 
 Speed Conversion
 2.1) Alt and Mach
@@ -21,6 +20,7 @@ def menue_func():
     while (selection := input(MENU_PROMPT)) != "q":
         try:
             MENUE_OPTIONS[selection]()
+            # TODO save some data to a log
         except KeyError:
             print("Invlaid input selected. Please try again.")
 
@@ -33,5 +33,6 @@ MENUE_OPTIONS = {
     "2.4": menue.alt_equiv,
 }
 
-
+# TODO open a new log file
 menue_func()
+print("Hope this was useful. Bye now see you soon.")

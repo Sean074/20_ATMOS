@@ -3,7 +3,7 @@ import atmos
 
 
 def air_data():
-    h_press_user = float(input("Input altitude: "))
+    h_press_user = float(input("Input pressure altitude: "))
     h_unit = input("Input units m/ft: ")
 
     flag = False
@@ -21,7 +21,10 @@ def air_data():
 
     point_in_sky = atmos.get_atmos_properties(h_press_ft)
 
-    return point_in_sky
+    # TODO Make this look pretty
+    print(point_in_sky)
+
+    return
 
 
 def alt_mach():
