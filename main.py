@@ -1,5 +1,5 @@
 import pandas as pd
-from menue import *
+import menue
 
 MENU_PROMPT = """-- Menue --
 
@@ -17,7 +17,7 @@ q) Quit/Exit
 
 Enter your choice: """
 
-def menue():
+def menue_func():
     while (selection := input(MENU_PROMPT)) != "q":
         try:
             MENUE_OPTIONS[selection]()
@@ -34,4 +34,4 @@ MENUE_OPTIONS = {
 }
 
 
-menue()
+menue_func()
