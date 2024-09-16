@@ -4,6 +4,7 @@ MENU_PROMPT = """-- Menue --
 
 Atmospheric Properties
 1.1) Given pressure altitude
+1.2) GIven static pressure
 
 Speed Conversion
 2.1) Alt and Mach
@@ -26,7 +27,8 @@ def menue_func():
 
 
 MENUE_OPTIONS = {
-    "1.1": menue.air_data,
+    "1.1": menue.air_data_alt,
+    "1.2": menue.air_data_pres,
     "2.1": menue.alt_mach,
     "2.2": menue.alt_true,
     "2.3": menue.alt_cal,
