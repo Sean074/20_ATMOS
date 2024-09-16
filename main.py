@@ -37,4 +37,4 @@ MENUE_OPTIONS = {
 
 # TODO open a new log file
 menue_func()
-print("Hope this was useful. Bye now see you soon.")
+print("Hope this was useful. Bye now, see you soon.")
