@@ -4,7 +4,7 @@ MENU_PROMPT = """-- Menue --
 
 Atmospheric Properties
 1.1) Given pressure altitude
-1.2) GIven static pressure
+1.2) Given static pressure
 
 Speed Conversion
 2.1) Alt and Mach

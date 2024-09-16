@@ -22,6 +22,7 @@ def air_data_alt():
     point_in_sky = atmos.get_atmos_properties(h_press_ft=h_press_ft,p_press_psf=False)
 
     # TODO Make this look pretty
+    # TODO Let the user pick output units
     print(point_in_sky)
 
     return
