@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math
 
 
 def select_atmos_data():
@@ -61,10 +62,11 @@ def get_atmos_properties(h_press_ft,p_press_psf):
             print(f"ERROR: Altitude {p_press_psf} psf too low out of range {press_min} to {press_max} psf")
             output_df = "ERROR"      
         else:
-            # TODO This interp function does not work UNLESS the x data is ordered in increasing.  Else crap.
-            h_press_ft  = np.interp(p_press_psf, df_atmos["P_lb/ft2"], df_atmos["H_ft"])
-            pho_ratio = np.interp(p_press_psf, df_atmos["P_lb/ft2"], df_atmos["pho/pho0"])
-            pho_slug_ft3 = np.interp(p_press_psf, df_atmos["P_lb/ft2"], df_atmos["pho_slug/ft3"])
+            # Interp requires the x value ot be asending.
+            df_atmos_sort_p = df_atmos.sort_values(by=["P_lb/ft2"])
+            h_press_ft  = np.interp(p_press_psf, df_atmos_sort_p["P_lb/ft2"], df_atmos_sort_p["H_ft"])
+            pho_ratio = np.interp(p_press_psf, df_atmos_sort_p["P_lb/ft2"], df_atmos_sort_p["pho/pho0"])
+            pho_slug_ft3 = np.interp(p_press_psf, df_atmos_sort_p["P_lb/ft2"], df_atmos_sort_p["pho_slug/ft3"])
 
             output_df = {
                 'h_press_ft':   h_press_ft,
@@ -75,3 +77,16 @@ def get_atmos_properties(h_press_ft,p_press_psf):
 
     return output_df
 
+
+def mach_alt(speed_defined,alt_defined):
+    
+    a_0        = 661.47  # kts
+    gamma      = 1.4     # ratio of specific heats for air
+
+    aTarget    = math.sqrt(gamma*atmos['p_static_psf']/atmos['pho_slug_ft3'])*0.5924838  # kts, p [], pho []
+
+    MachTarget = speed_defined
+    KTASTarget = aTarget*MachTarget
+    KEASTarget = KTASTarget*math.sqrt(atmos['pho_ratio'])
+    qTarget    = atmos['p_static_psf']*((1+0.2*MachTarget**2)**(7/2)-1)
+    KCASTarget = a_0*math.sqrt(5*((qTarget/p_0+1)**(2/7)-1))

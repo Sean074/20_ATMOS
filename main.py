@@ -7,10 +7,10 @@ Atmospheric Properties
 1.2) Given static pressure
 
 Speed Conversion
-2.1) Alt and Mach
-2.2) Alt and True
-2.3) Alt and Calibrated
-2.4) Alt and Equivilent
+2.1) Alt and Mach (IN DEV)
+2.2) Alt and True (NOT IMPLIMENTED)
+2.3) Alt and Calibrated (NOT IMPLIMENTED)
+2.4) Alt and Equivilent (NOT IMPLIMENTED)
 
 Exit/Quit
 q) Quit/Exit

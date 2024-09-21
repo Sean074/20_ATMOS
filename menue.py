@@ -90,9 +90,22 @@ def alt_mach():
     # TODO Make this valid supersonic
 
     # Request user input
-    alt = input("Input the pressure altitude: ")
-    alt_units = input("Input the pressure altitude units: ")
-    mach  = input() 
+    alt_user = input("Input the pressure altitude: ")
+    alt_unit = input("Input the pressure altitude units (ft/m): ")
+    mach  = input()
+    flag = False
+
+    while flag != True:
+        if alt_unit.lower() == "m":
+            h_press_ft = alt_user * u_c.M_FT
+            flag = True
+        elif h_unit.lower() == "ft":
+            h_press_ft = alt_user
+            flag = True
+        else:
+            print("Input error: Select m or ft")
+            h_unit = input("Input units m/ft: ")
+
 
     return
 
