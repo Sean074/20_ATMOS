@@ -106,7 +106,8 @@ def alt_mach():
             alt_unit = input("Input units m/ft: ")
 
     speeds = atmos.mach_alt(mach,h_press_ft)
-    print(speeds)
+
+    atmos.print_speed(speeds)
 
     return
 
@@ -147,7 +148,8 @@ def alt_true():
             alt_unit = input("Input units (m/s, kts): ")
 
     speeds = atmos.tas_alt(ktas,h_press_ft)
-    print(speeds)
+
+    atmos.print_speed(speeds)
 
     return
 
@@ -187,7 +189,8 @@ def alt_cal():
             alt_unit = input("Input units (m/s, kts): ")
 
     speeds = atmos.cas_alt(kcas,h_press_ft)
-    print(speeds)
+
+    atmos.print_speed(speeds)
 
     return
 
@@ -228,6 +231,7 @@ def alt_equiv():
             alt_unit = input("Input units (m/s, kts): ")
 
     speeds = atmos.eas_alt(keas,h_press_ft)
-    print(speeds)
+
+    atmos.print_speed(speeds)
 
     return

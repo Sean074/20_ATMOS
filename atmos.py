@@ -19,6 +19,19 @@ def print_atmos(point_in_sky):
     print(f"Air Density: [slug/ft^3]: {point_in_sky['pho_slug_ft3']}")
     print("==================================================\n")
 
+    return
+
+
+def print_speed(speeds):
+    print("\n======== ATMOS ==================================")
+    print("Speeds")
+    print(f"Mach: {speeds['Mach']}")
+    print(f"KTAS: {speeds['ktas']} kts")
+    print(f"KEAS: {speeds['keas']} kts")
+    print(f"KCAS: {speeds['kcas']} kts")
+    print(f"Dynamic pressure: {speeds['q']} psf")
+    print("==================================================\n")    
+
 
 def get_atmos_prop_alt(h_press_ft):
     df_atmos = select_atmos_data()
@@ -112,6 +125,8 @@ def mach_alt(speed,alt_defined):
         "q": q_,
         "kcas": kcas,
     }
+
+    print_speed(speed_df,atmos_alt)
 
     return speed_df
 
