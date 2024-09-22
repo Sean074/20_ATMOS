@@ -17,4 +17,5 @@ BAR_PSF = 2088.545633
 PSF_BAR = 1 / BAR_PSF
 
 # Speed
+# TODO get the actual conversion for m/s to kts.
 MS_KTS = 3

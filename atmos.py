@@ -126,8 +126,6 @@ def mach_alt(speed,alt_defined):
         "kcas": kcas,
     }
 
-    print_speed(speed_df,atmos_alt)
-
     return speed_df
 
 def tas_alt(speed,alt_defined):
