@@ -13,10 +13,10 @@ def print_atmos(point_in_sky):
     # TODO Let the user pick output units
     print("\n======== ATMOS ==================================")
     print("Point in the sky properties:")
-    print(f"Pressure Altitude [ft]: {point_in_sky['h_press_ft']}")
-    print(f"Pressure Static [psf]: {point_in_sky['p_static_psf']}")
-    print(f"Density Ratio: {point_in_sky['pho_ratio']}")
-    print(f"Air Density: [slug/ft^3]: {point_in_sky['pho_slug_ft3']}")
+    print(f"Pressure Altitude [ft]: {point_in_sky['h_press_ft']:.1f}")
+    print(f"Pressure Static [psf]: {point_in_sky['p_static_psf']:.3f}")
+    print(f"Density Ratio: {point_in_sky['pho_ratio']:.3f}")
+    print(f"Air Density: [slug/ft^3]: {point_in_sky['pho_slug_ft3']:.3e}")
     print("==================================================\n")
 
     return
@@ -25,12 +25,14 @@ def print_atmos(point_in_sky):
 def print_speed(speeds):
     print("\n======== ATMOS ==================================")
     print("Speeds")
-    print(f"Mach: {speeds['Mach']}")
-    print(f"KTAS: {speeds['ktas']} kts")
-    print(f"KEAS: {speeds['keas']} kts")
-    print(f"KCAS: {speeds['kcas']} kts")
-    print(f"Dynamic pressure: {speeds['q']} psf")
-    print("==================================================\n")    
+    print(f"Mach: {speeds['Mach']:.3f}")
+    print(f"KTAS: {speeds['ktas']:.1f} kts")
+    print(f"KEAS: {speeds['keas']:.1f} kts")
+    print(f"KCAS: {speeds['kcas']:.1f} kts")
+    print(f"Dynamic pressure: {speeds['q']:.3f} psf")
+    print("==================================================\n")
+
+    return    
 
 
 def get_atmos_prop_alt(h_press_ft):
