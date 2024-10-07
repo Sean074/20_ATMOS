@@ -1,4 +1,4 @@
-import menue
+import menu
 
 MENU_PROMPT = """-- Menue --
 
@@ -12,6 +12,11 @@ Speed Conversion (Subsonic)
 2.3) Alt and Calibrated
 2.4) Alt and Equivilent
 
+Create Speed Altitude Chart (in development)
+3.1) KTAS vs Alt
+3.2) KCAS vs Alt
+3.3) KEAS vs Alt
+
 Exit/Quit
 q) Quit/Exit
 
@@ -23,16 +28,19 @@ def menue_func():
             MENUE_OPTIONS[selection]()
             # TODO save some data to a log
         except KeyError:
-            print("Invlaid input selected. Please try again.")
+            print("Invalid input selected. Please try again.")
 
 
 MENUE_OPTIONS = {
-    "1.1": menue.air_data_alt,
-    "1.2": menue.air_data_pres,
-    "2.1": menue.alt_mach,
-    "2.2": menue.alt_true,
-    "2.3": menue.alt_cal,
-    "2.4": menue.alt_equiv,
+    "1.1": menu.air_data_alt,
+    "1.2": menu.air_data_pres,
+    "2.1": menu.alt_mach,
+    "2.2": menu.alt_true,
+    "2.3": menu.alt_cal,
+    "2.4": menu.alt_equiv,
+    "3.1": menu.speed_alt_ktas,
+    "3.2": menu.speed_alt_kcas,
+    "3.3": menu.speed_alt_keas,
 }
 
 # TODO open a new log file

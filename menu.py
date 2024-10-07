@@ -235,3 +235,38 @@ def alt_equiv():
     atmos.print_speed(speeds)
 
     return
+
+def speed_alt_ktas():
+
+    speed_min, speed_max = input("Define the speed range (min max) in knots: ").split()
+    speed_min = float(speed_min)
+    speed_max = float(speed_max)
+    speed_inc = (speed_max - speed_max)/300
+
+    ktas_array = []
+
+    for speed in range(speed_min, speed_max, speed_inc):
+        ktas_array = speed
+    
+    alt_min, alt_max = input("Define the altitude range (min max) in ft: ").split()
+    alt_min = float(alt_min)
+    alt_max = float(alt_max)
+    alt_inc = (speed_max - speed_max)/300
+
+    alt_array = []
+
+    for altitude in range(alt_min, alt_max, alt_inc):
+        alt_array = altitude
+
+    print(ktas_array)
+    print(alt_array)
+
+    
+    return
+
+
+def speed_alt_kcas():
+    pass
+
+def speed_alt_keas():
+    pass
