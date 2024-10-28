@@ -1,12 +1,12 @@
 import menu
 
-MENU_PROMPT = """-- Menue --
+MENU_PROMPT = """-- Menu --
 
 Atmospheric Properties
 1.1) Given pressure altitude
 1.2) Given static pressure
 
-Speed Conversion (Subsonic)
+Speed Conversion (Subsonic or Supersonic)
 2.1) Alt and Mach
 2.2) Alt and True
 2.3) Alt and Calibrated
@@ -22,16 +22,16 @@ q) Quit/Exit
 
 Enter your choice: """
 
-def menue_func():
+def menu_func():
     while (selection := input(MENU_PROMPT)) != "q":
         try:
-            MENUE_OPTIONS[selection]()
+            MENU_OPTIONS[selection]()
             # TODO save some data to a log
         except KeyError:
             print("Invalid input selected. Please try again.")
 
 
-MENUE_OPTIONS = {
+MENU_OPTIONS = {
     "1.1": menu.air_data_alt,
     "1.2": menu.air_data_pres,
     "2.1": menu.alt_mach,
@@ -44,5 +44,5 @@ MENUE_OPTIONS = {
 }
 
 # TODO open a new log file
-menue_func()
+menu_func()
 print("Hope this was useful. Bye now, see you soon.")
