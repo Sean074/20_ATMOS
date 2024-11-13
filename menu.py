@@ -85,8 +85,6 @@ def air_data_pres():
 
 
 def alt_mach():
-    # TODO Make this valid supersonic
-
     # Request user input
     alt_user = float(input("Input the pressure altitude: "))
     alt_unit = input("Input the pressure altitude units (ft/m): ")
@@ -113,8 +111,6 @@ def alt_mach():
 
 
 def alt_true():
-    # TODO Make this valid supersonic
-
     # Request user input
     alt_user = float(input("Input the pressure altitude: "))
     alt_unit = input("Input the pressure altitude units (ft, m): ")
@@ -154,8 +150,6 @@ def alt_true():
     return
 
 def alt_cal():
-    # TODO Make this valid supersonic
-
     # Request user input
     alt_user = float(input("Input the pressure altitude: "))
     alt_unit = input("Input the pressure altitude units (ft, m): ")
@@ -196,8 +190,6 @@ def alt_cal():
 
 
 def alt_equiv():
-    # TODO Make this valid supersonic
-
     # Request user input
     alt_user = float(input("Input the pressure altitude: "))
     alt_unit = input("Input the pressure altitude units (ft, m): ")

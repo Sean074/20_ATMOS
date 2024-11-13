@@ -43,8 +43,6 @@ def get_atmos_prop_alt(h_press_ft):
     hgeo_min = df_atmos["Hgeo_ft"].min()
     hgeo_max = df_atmos["Hgeo_ft"].max()
 
-    print(f"hgeo_min {hgeo_min} and h_press_ft {h_press_ft}")
-
     # Test h within table
     if hgeo_min >= h_press_ft:
         print(f"ERROR: Altitude {h_press_ft} ft too low out of range {hgeo_min} to {hgeo_max} ft")
@@ -167,7 +165,7 @@ def mach_super(q_c, p_static, delta = 0.1, error_percent = 0.001):
             Mach_guess = Mach_guess + delta
         else:  # bracket
             delta = delta/2
-            MAch_guess = Mach_guess - delta
+            Mach_guess = Mach_guess - delta
 
         Mach_est = Mach_guess
 
@@ -376,7 +374,7 @@ def cas_alt(speed, alt_defined):
         q_b = (((1+GAMMA)**2) / (4*GAMMA - 2*(GAMMA-1)*(a_0/kcas)**2))**(1/(GAMMA-1))
         q_= (q_a * q_b - 1) * p_0
 
-    # Check of the superonic or subsonic verion of Mach and vtas is used
+    # Check if the superonic or subsonic verion of Mach and vtas is used
     Mach = math.sqrt(5*((q_/p_static+1)**(2/7)-1))
     if Mach <= 1.0:
         Mach = math.sqrt(5*((q_/p_static+1)**(2/7)-1))
