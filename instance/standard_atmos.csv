@@ -1,5 +1,5 @@
-# From Nelson"Flight Stability and Automatic Congtrol
-Hgeo_ft,H_ft,T_degR,P_lb/ft3,P/P0,pho_slug/ft3,pho/pho0
+# From Nelson"Flight Stability and Automatic Control"
+Hgeo_ft,H_ft,T_degR,P_lb/ft2,P/P0,pho_slug/ft3,pho/pho0
 -2500,-2500,527.584,2300.5,1.0871,0.002546765,1.0711
 0,0,518.67,2116.2,1,0.002377652,1
 2500,2500,509.756,1931.9,0.9129,0.002208539,0.9289
