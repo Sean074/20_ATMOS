@@ -2,9 +2,16 @@ import pandas as pd
 import numpy as np
 import math
 
+_atmos_csv_path = './instance/standard_atmos.csv'
+
+
+def set_atmos_model(path):
+    global _atmos_csv_path
+    _atmos_csv_path = path
+
 
 def select_atmos_data():
-    df_atmos = pd.read_csv('./instance/standard_atmos.csv', comment="#")
+    df_atmos = pd.read_csv(_atmos_csv_path, comment="#")
     return df_atmos
 
 

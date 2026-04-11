@@ -1,3 +1,6 @@
+import glob
+import os
+
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator, ValidationError
@@ -33,6 +36,37 @@ def prompt_float(prompt_text):
 def press_enter_to_continue():
     """Pause and wait for the user to press Enter before returning to the menu."""
     prompt("\nPress Enter to return to the main menu...")
+
+
+def select_model(instance_dir):
+    """Prompt the user to select an atmospheric model CSV from instance_dir."""
+    csv_files = sorted(glob.glob(os.path.join(instance_dir, "*.csv")))
+    if not csv_files:
+        console.print("[red]No CSV model files found in instance directory.[/red]")
+        raise SystemExit(1)
+
+    names = [os.path.basename(f) for f in csv_files]
+    keys = [str(i) for i in range(1, len(names) + 1)]
+
+    table = Table(show_header=False, box=None, padding=(0, 2))
+    table.add_column("Key", style="cyan")
+    table.add_column("Model")
+    for key, name in zip(keys, names):
+        table.add_row(key, name)
+    console.print()
+    console.print(Panel(table, title="[bold]Select Atmospheric Model[/bold]", border_style="cyan"))
+
+    completer = WordCompleter(keys + names, ignore_case=True, sentence=True)
+    while True:
+        try:
+            choice = prompt("Model: ", completer=completer).strip()
+        except (KeyboardInterrupt, EOFError):
+            raise
+        if choice in keys:
+            return csv_files[int(choice) - 1]
+        if choice in names:
+            return csv_files[names.index(choice)]
+        console.print(f"[red]Invalid selection.[/red] Enter a number (1\u2013{len(names)}) or filename.")
 
 
 def ask_unit(prompt_text, valid_choices):

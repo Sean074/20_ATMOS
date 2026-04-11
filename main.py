@@ -2,6 +2,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from rich.panel import Panel
 
+import atmos
 import menu
 import ui
 
@@ -64,4 +65,12 @@ def menu_func():
 
 
 # TODO open a new log file
+try:
+    model_path = ui.select_model('./instance')
+except (KeyboardInterrupt, EOFError):
+    ui.console.print("\n[cyan]Bye.[/cyan]\n")
+    raise SystemExit(0)
+
+atmos.set_atmos_model(model_path)
+
 menu_func()
