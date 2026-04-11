@@ -1,8 +1,13 @@
-import numpy as np
+import glob
+import os
+
+from prompt_toolkit import prompt as pt_prompt
+from prompt_toolkit.completion import WordCompleter
 
 import unit_convert as u_c
 import atmos
 import ui
+import plot_speed_alt
 
 
 # ---------------------------------------------------------------------------
@@ -97,24 +102,54 @@ def alt_equiv():
     ui.press_enter_to_continue()
 
 
+def _select_envelope():
+    """Prompt the user to choose a JSON envelope file from ./instance/. Returns path or None."""
+    from rich.table import Table
+    from rich.panel import Panel
+
+    instance_dir = './instance'
+    json_files = sorted(glob.glob(os.path.join(instance_dir, '*.json')))
+    if not json_files:
+        return None
+
+    names = [os.path.basename(f) for f in json_files]
+    keys  = [str(i) for i in range(1, len(names) + 1)]
+
+    tbl = Table(show_header=False, box=None, padding=(0, 2))
+    tbl.add_column("Key", style="cyan")
+    tbl.add_column("File")
+    for k, n in zip(keys, names):
+        tbl.add_row(k, n)
+    tbl.add_row("0", "(no envelope — basic chart)")
+    ui.console.print()
+    ui.console.print(Panel(tbl, title="[bold]Speed Envelope JSON[/bold]", border_style="cyan"))
+
+    completer = WordCompleter(['0'] + keys, sentence=True)
+    while True:
+        choice = pt_prompt("Select envelope file: ", completer=completer).strip()
+        if choice == '0':
+            return None
+        if choice in keys:
+            return json_files[int(choice) - 1]
+        ui.console.print(f"[red]Invalid.[/red] Enter 0–{len(names)}.")
+
+
 def speed_alt_ktas():
-    speed_min = ui.prompt_float("Speed range minimum (knots): ")
-    speed_max = ui.prompt_float("Speed range maximum (knots): ")
-    speed_inc = (speed_max - speed_min) / 300
-    ktas_array = list(np.arange(speed_min, speed_max, speed_inc))
-
-    alt_min = ui.prompt_float("Altitude range minimum (ft): ")
-    alt_max = ui.prompt_float("Altitude range maximum (ft): ")
-    alt_inc = (alt_max - alt_min) / 300
-    alt_array = list(np.arange(alt_min, alt_max, alt_inc))
-
-    ui.console.print(ktas_array)
-    ui.console.print(alt_array)
+    envelope_path = _select_envelope()
+    ui.console.print("[cyan]Generating chart…[/cyan]")
+    plot_speed_alt.plot_speed_alt_ktas(envelope_json=envelope_path)
+    ui.press_enter_to_continue()
 
 
 def speed_alt_kcas():
-    pass
+    envelope_path = _select_envelope()
+    ui.console.print("[cyan]Generating chart…[/cyan]")
+    plot_speed_alt.plot_speed_alt_kcas(envelope_json=envelope_path)
+    ui.press_enter_to_continue()
 
 
 def speed_alt_keas():
-    pass
+    envelope_path = _select_envelope()
+    ui.console.print("[cyan]Generating chart…[/cyan]")
+    plot_speed_alt.plot_speed_alt_keas(envelope_json=envelope_path)
+    ui.press_enter_to_continue()
