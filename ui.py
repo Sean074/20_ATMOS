@@ -1,29 +1,73 @@
-def ask_unit(prompt, valid_choices):
-    """Prompt for a unit string, re-prompting until a valid choice is entered."""
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.validation import Validator, ValidationError
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+console = Console()
+
+
+# ---------------------------------------------------------------------------
+# Input helpers
+# ---------------------------------------------------------------------------
+
+class _NumberValidator(Validator):
+    def validate(self, document):
+        text = document.text.strip()
+        try:
+            float(text)
+        except ValueError:
+            raise ValidationError(
+                message="Please enter a number",
+                cursor_position=len(text),
+            )
+
+
+def prompt_float(prompt_text):
+    """Prompt for a number, validating inline before accepting."""
+    result = prompt(prompt_text, validator=_NumberValidator(), validate_while_typing=False)
+    return float(result.strip())
+
+
+def press_enter_to_continue():
+    """Pause and wait for the user to press Enter before returning to the menu."""
+    prompt("\nPress Enter to return to the main menu...")
+
+
+def ask_unit(prompt_text, valid_choices):
+    """Prompt for a unit with tab-completion, re-prompting on invalid input."""
+    completer = WordCompleter(valid_choices, ignore_case=True, sentence=True)
     while True:
-        choice = input(prompt).lower().strip()
+        choice = prompt(prompt_text, completer=completer).lower().strip()
         if choice in valid_choices:
             return choice
-        print(f"Invalid input. Choose from: {', '.join(valid_choices)}")
+        console.print(f"[red]Invalid input.[/red] Choose from: {', '.join(valid_choices)}")
 
+
+# ---------------------------------------------------------------------------
+# Output helpers
+# ---------------------------------------------------------------------------
 
 def print_atmos(point_in_sky):
-    print("\n======== ATMOS ==================================")
-    print("Point in the sky properties:")
-    print(f"Pressure Altitude [ft]: {point_in_sky['h_press_ft']:.1f}")
-    print(f"Pressure Static [psf]: {point_in_sky['p_static_psf']:.3f}")
-    print(f"Density Ratio: {point_in_sky['pho_ratio']:.3f}")
-    print(f"Air Density [slug/ft^3]: {point_in_sky['pho_slug_ft3']:.3e}")
-    print(f"Air temperature [degR]: {point_in_sky['temp_degR']:.1f}")
-    print("==================================================\n")
+    table = Table(show_header=True, header_style="bold", box=None, padding=(0, 2))
+    table.add_column("Property", style="cyan")
+    table.add_column("Value", justify="right")
+    table.add_row("Pressure Altitude", f"{point_in_sky['h_press_ft']:.1f} ft")
+    table.add_row("Static Pressure",   f"{point_in_sky['p_static_psf']:.3f} psf")
+    table.add_row("Density Ratio",     f"{point_in_sky['pho_ratio']:.4f}")
+    table.add_row("Air Density",       f"{point_in_sky['pho_slug_ft3']:.4e} slug/ft\u00b3")
+    table.add_row("Temperature",       f"{point_in_sky['temp_degR']:.1f} \u00b0R")
+    console.print(Panel(table, title="[bold cyan]Atmospheric Properties[/bold cyan]", border_style="cyan"))
 
 
 def print_speed(speeds):
-    print("\n======== ATMOS ==================================")
-    print("Speeds")
-    print(f"Mach: {speeds['Mach']:.3f}")
-    print(f"KTAS: {speeds['ktas']:.1f} kts")
-    print(f"KEAS: {speeds['keas']:.1f} kts")
-    print(f"KCAS: {speeds['kcas']:.1f} kts")
-    print(f"Dynamic pressure: {speeds['q_c']:.3f} psf")
-    print("==================================================\n")
+    table = Table(show_header=True, header_style="bold", box=None, padding=(0, 2))
+    table.add_column("Speed", style="cyan")
+    table.add_column("Value", justify="right")
+    table.add_row("Mach",              f"{speeds['Mach']:.4f}")
+    table.add_row("KTAS",              f"{speeds['ktas']:.1f} kts")
+    table.add_row("KEAS",              f"{speeds['keas']:.1f} kts")
+    table.add_row("KCAS",              f"{speeds['kcas']:.1f} kts")
+    table.add_row("Dynamic Pressure",  f"{speeds['q_c']:.3f} psf")
+    console.print(Panel(table, title="[bold cyan]Speed Conversion[/bold cyan]", border_style="cyan"))
