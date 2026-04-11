@@ -233,7 +233,7 @@ def speed_alt_ktas():
     speed_min, speed_max = input("Define the speed range (min max) in knots: ").split()
     speed_min = float(speed_min)
     speed_max = float(speed_max)
-    speed_inc = (speed_max - speed_max)/300
+    speed_inc = (speed_max - speed_min)/300
 
     ktas_array = []
 

@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import math
-
+import matplotlib.pyplot as plt
+import plotly.express as px
 
 def select_atmos_data():
     df_atmos = pd.read_csv('./instance/standard_atmos.csv', comment="#")
@@ -308,40 +309,6 @@ def eas_alt(speed, alt_defined):
         "ktas": ktas,
         "keas": keas,
         "q_c": q_,
-        "kcas": kcas,
-    }
-
-    return speed_df
-
-def eas_alt(speed, alt_defined):
-    # TODO convert a_0 to calcualted from user supplied atmos data
-   
-    df_atmos = select_atmos_data()
-
-    # Constants
-    a_0 = 661.4745  # kts
-    p_0 = df_atmos.loc[df_atmos["Hgeo_ft"]==0, "P_lb/ft2"].values[0] 
-    GAMMA = 1.4     # ratio of specific heats for air
-
-    # Get the atmos properties for the user selected altitude.
-    atmos_alt = get_atmos_prop_alt(alt_defined)
-    p_static = atmos_alt['p_static_psf']
-    pho = atmos_alt['pho_slug_ft3']
-    pho_ratio = atmos_alt['pho_ratio']
-    a_local = math.sqrt(GAMMA*p_static/pho)*0.5924838  # kts
-    
-    # Calculate speed Sub Sonic
-    keas = speed
-    ktas = keas / math.sqrt(pho_ratio)
-    Mach = ktas / a_local
-    q_ = p_static * ((1 + 0.2 * Mach**2)**(7/2)-1)
-    kcas = a_0 * math.sqrt(5*((q_/p_0+1)**(2/7)-1))
-
-    speed_df = {
-        "Mach": Mach,
-        "ktas": ktas,
-        "keas": keas,
-        "q": q_,
         "kcas": kcas,
     }
 
