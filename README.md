@@ -1,4 +1,6 @@
-# ATMOS
+# ATMOS 1.0.0
+
+**Author:** Sean O'Meara
 
 A Python TUI for standard atmosphere calculations and speed conversions.
 
