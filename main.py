@@ -10,6 +10,7 @@ import atmos
 import menu
 import ui
 from config import APP_CONFIG
+from version import __version__, __author__
 
 _MENU_DISPLAY = """\
 [bold cyan]Atmospheric Properties[/bold cyan]
@@ -52,7 +53,7 @@ _completer = WordCompleter(list(MENU_OPTIONS.keys()) + ["q"], sentence=True)
 def menu_func():
     while True:
         ui.console.print()
-        ui.console.print(Panel(_MENU_DISPLAY, title="[bold]ATMOS[/bold]", border_style="cyan"))
+        ui.console.print(Panel(_MENU_DISPLAY, title=f"[bold]ATMOS v{__version__}[/bold]  [dim]{__author__}[/dim]", border_style="cyan"))
 
         try:
             selection = prompt("Selection: ", completer=_completer).strip()
