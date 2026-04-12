@@ -2,7 +2,7 @@
 import json
 import pathlib
 
-_CONFIG_PATH = pathlib.Path(__file__).parent / "config" / "defaults.json"
+_CONFIG_PATH = pathlib.Path(__file__).parent.parent / "config" / "defaults.json"
 
 # Hardcoded fallback used only if defaults.json is missing.
 _FALLBACK = {
@@ -26,8 +26,8 @@ _FALLBACK = {
         "mach_super_initial_delta":     0.1,
         "mach_super_error_percent":     0.001,
     },
-    "instance_dir": "./instance",
-    "log_file":     "AtmosLog.txt",
+    "data_dir":  "./data",
+    "log_file":  "./data/outputs/AtmosLog.txt",
 }
 
 try:

@@ -7,7 +7,7 @@ import plot_speed_alt
 import unit_convert as u_c
 from config import APP_CONFIG
 
-_INSTANCE_DIR = APP_CONFIG["instance_dir"]
+_DATA_DIR = APP_CONFIG["data_dir"]
 
 # Maps speed_type field in input JSON → atmos calculation function
 _SPEED_CALC = {
@@ -58,7 +58,7 @@ def _pressure_to_psf(value, unit):
 
 def _run_speed_cases():
     """Select an input JSON and run speed conversions for all cases in it."""
-    path = ui.select_input_file(_INSTANCE_DIR)
+    path = ui.select_input_file(_DATA_DIR)
     if path is None:
         return
 
@@ -96,7 +96,7 @@ def _run_speed_cases():
 
 def _run_atmos_cases():
     """Select an input JSON and retrieve atmospheric properties for all cases in it."""
-    path = ui.select_input_file(_INSTANCE_DIR)
+    path = ui.select_input_file(_DATA_DIR)
     if path is None:
         return
 
@@ -234,21 +234,21 @@ def speed_from_file():
 # ---------------------------------------------------------------------------
 
 def speed_alt_ktas():
-    envelope_path = ui.select_envelope_file(_INSTANCE_DIR)
+    envelope_path = ui.select_envelope_file(_DATA_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_ktas(envelope_json=envelope_path)
     ui.press_enter_to_continue()
 
 
 def speed_alt_kcas():
-    envelope_path = ui.select_envelope_file(_INSTANCE_DIR)
+    envelope_path = ui.select_envelope_file(_DATA_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_kcas(envelope_json=envelope_path)
     ui.press_enter_to_continue()
 
 
 def speed_alt_keas():
-    envelope_path = ui.select_envelope_file(_INSTANCE_DIR)
+    envelope_path = ui.select_envelope_file(_DATA_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_keas(envelope_json=envelope_path)
     ui.press_enter_to_continue()

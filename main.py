@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 from rich.panel import Panel
@@ -5,6 +9,7 @@ from rich.panel import Panel
 import atmos
 import menu
 import ui
+from config import APP_CONFIG
 
 _MENU_DISPLAY = """\
 [bold cyan]Atmospheric Properties[/bold cyan]
@@ -69,7 +74,7 @@ def menu_func():
 
 
 try:
-    model_path = ui.select_model('./instance')
+    model_path = ui.select_model(APP_CONFIG["data_dir"])
 except (KeyboardInterrupt, EOFError):
     ui.console.print("\n[cyan]Bye.[/cyan]\n")
     raise SystemExit(0)

@@ -24,6 +24,6 @@
         "mach_super_error_percent":     0.001
     },
 
-    "instance_dir": "./instance",
-    "log_file":     "AtmosLog.txt"
+    "data_dir": "./data",
+    "log_file": "./data/outputs/AtmosLog.txt"
 }
