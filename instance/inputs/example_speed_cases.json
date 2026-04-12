@@ -1,0 +1,10 @@
+{
+    "_comment": "Speed conversion cases. speed_type: mach | ktas | kcas | keas. alt_ft in feet.",
+    "cases": [
+        { "alt_ft": 5000,  "speed_type": "ktas", "speed_value": 200 },
+        { "alt_ft": 10000, "speed_type": "kcas", "speed_value": 250 },
+        { "alt_ft": 20000, "speed_type": "keas", "speed_value": 280 },
+        { "alt_ft": 35000, "speed_type": "mach", "speed_value": 0.84 },
+        { "alt_ft": 41000, "speed_type": "mach", "speed_value": 0.89 }
+    ]
+}

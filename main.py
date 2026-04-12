@@ -10,14 +10,16 @@ _MENU_DISPLAY = """\
 [bold cyan]Atmospheric Properties[/bold cyan]
   [cyan]1.1[/cyan]  Given pressure altitude
   [cyan]1.2[/cyan]  Given static pressure
+  [cyan]1.3[/cyan]  From JSON file
 
 [bold cyan]Speed Conversion[/bold cyan]  [dim](subsonic or supersonic)[/dim]
   [cyan]2.1[/cyan]  Alt and Mach
   [cyan]2.2[/cyan]  Alt and True Airspeed
   [cyan]2.3[/cyan]  Alt and Calibrated Airspeed
   [cyan]2.4[/cyan]  Alt and Equivalent Airspeed
+  [cyan]2.5[/cyan]  From JSON file
 
-[bold cyan]Speed-Altitude Charts[/bold cyan]  [dim](in development)[/dim]
+[bold cyan]Speed-Altitude Charts[/bold cyan]
   [cyan]3.1[/cyan]  KTAS vs Alt
   [cyan]3.2[/cyan]  KCAS vs Alt
   [cyan]3.3[/cyan]  KEAS vs Alt
@@ -28,10 +30,12 @@ _MENU_DISPLAY = """\
 MENU_OPTIONS = {
     "1.1": menu.air_data_alt,
     "1.2": menu.air_data_pres,
+    "1.3": menu.air_data_from_file,
     "2.1": menu.alt_mach,
     "2.2": menu.alt_true,
     "2.3": menu.alt_cal,
     "2.4": menu.alt_equiv,
+    "2.5": menu.speed_from_file,
     "3.1": menu.speed_alt_ktas,
     "3.2": menu.speed_alt_kcas,
     "3.3": menu.speed_alt_keas,
@@ -64,7 +68,6 @@ def menu_func():
     ui.console.print("\n[cyan]Hope this was useful. Bye now, see you soon.[/cyan]\n")
 
 
-# TODO open a new log file
 try:
     model_path = ui.select_model('./instance')
 except (KeyboardInterrupt, EOFError):

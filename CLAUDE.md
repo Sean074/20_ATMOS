@@ -9,40 +9,75 @@ source .venv/bin/activate
 python main.py
 ```
 
-The app opens an interactive TUI. On startup it prompts to select an atmospheric model CSV from `./instance/`. Then a menu lets you compute atmospheric properties, convert airspeeds, and generate speed-altitude charts.
+On startup the app prompts to select an atmospheric model CSV from `./instance/`. The main menu then offers atmospheric property lookups, speed conversions, and speed-altitude chart generation. All calculation inputs come from JSON files in `./instance/inputs/` — the TUI only asks which file to run.
 
 ## Architecture
 
-The codebase has a clean layered structure:
+Layered structure: computation engine → menu handlers → UI display.
 
-- **`atmos.py`** — Core computation engine. Reads a CSV atmospheric model (via `set_atmos_model(path)`) and exposes:
-  - `get_atmos_prop_alt(h_press_ft)` / `get_atmos_prop_pres(p_press_psf)` — atmospheric properties at altitude/pressure
-  - `mach_alt()`, `tas_alt()`, `eas_alt()`, `cas_alt()` — airspeed conversions returning `{Mach, ktas, keas, kcas, q_c}`
-  - Supersonic solvers `mach_super()` / `vcas_super()` using binary-search iteration
+- **`atmos.py`** — Core engine. Call `set_atmos_model(path)` at startup to load a CSV. Key functions:
+  - `get_atmos_prop_alt(h_press_ft)` / `get_atmos_prop_pres(p_press_psf)` — returns `{h_press_ft, p_static_psf, pho_ratio, pho_slug_ft3, temp_degR}`
+  - `mach_alt()`, `tas_alt()`, `eas_alt()`, `cas_alt()` — all return `{Mach, ktas, keas, kcas, q_c}`
+  - Raises `AtmosRangeError` (subclass of `ValueError`) when input is out of model range
+  - Module-level constants: `GAMMA`, `A_0_KTS`, `P_0_PSF`, `_KTS_FACTOR` — physical constants, not config
 
-- **`unit_convert.py`** — Pure conversion constants (no functions). Import as `import unit_convert as u_c` and use e.g. `u_c.M_FT`, `u_c.MS_KTS`.
+- **`config.py`** — Thin loader. `from config import APP_CONFIG` gives the dict from `config/defaults.json`. Falls back to hardcoded values if the file is missing.
 
-- **`ui.py`** — Rich/prompt_toolkit display layer. Exposes `console` (Rich Console), `prompt_float()`, `ask_unit()`, `select_model()`, `print_atmos()`, `print_speed()`.
+- **`logger.py`** — Append-mode CSV logger (`AtmosLog.txt`). Call `log_speed_result(alt_ft, result)` or `log_atmos_result(result)` after each calculation.
 
-- **`menu.py`** — Wires UI inputs to `atmos.py` computations. Each menu option is one function (e.g. `alt_mach()`, `speed_alt_ktas()`). Also handles envelope JSON selection for charts.
+- **`menu.py`** — Menu handlers. `_run_speed_cases()` and `_run_atmos_cases()` handle file selection, iterate over JSON cases, call `atmos.*`, log results, and call `ui.print_*_table()`. Chart handlers call `ui.select_envelope_file()` then `plot_speed_alt.*`.
 
-- **`main.py`** — Entry point. Defines the menu display string and dispatch dict, runs the REPL loop.
+- **`ui.py`** — Display layer. Key functions: `select_model()`, `select_input_file()`, `select_envelope_file()`, `print_speed_table(rows)`, `print_atmos_table(rows)`.
 
-- **`plot_speed_alt.py`** — Matplotlib chart generator. Three public functions (`plot_speed_alt_ktas/kcas/keas`) all delegate to `_plot_chart(x_type)`. Draws constant Mach (gray), KCAS (steelblue), KEAS (seagreen), and KTAS (coral) grid lines, plus optional speed envelope boundaries from JSON.
+- **`plot_speed_alt.py`** — Matplotlib charts. Three public entry points (`plot_speed_alt_ktas/kcas/keas`) delegate to `_plot_chart(x_type)`. Chart defaults come from `APP_CONFIG["chart_defaults"]`; an envelope JSON overrides them.
+
+- **`unit_convert.py`** — Conversion constants only (e.g. `M_FT`, `MS_KTS`).
+
+## Configuration — `config/defaults.json`
+
+Edit this file to change chart axis ranges, grid line values, and solver tolerances without touching code. Key sections:
+
+```
+chart_defaults   — alt_min/max, per-type x_min/x_max, mach/kcas/keas/ktas grid arrays, n_altitude_points
+solver           — intersection binary-search tol/iterations, vcas_super/mach_super step sizes and error %
+instance_dir     — path to instance directory (default ./instance)
+log_file         — path for AtmosLog.txt
+```
+
+Physics constants (`GAMMA = 1.4` etc.) are **not** in config — they are thermodynamic facts.
+
+## Input case files — `instance/inputs/*.json`
+
+The TUI selects from these files. Two schemas:
+
+**Speed conversion** (`speed_type`: `mach | ktas | kcas | keas`):
+```json
+{ "cases": [
+    { "alt_ft": 35000, "speed_type": "mach", "speed_value": 0.84 }
+] }
+```
+
+**Atmospheric properties** (`input_type`: `altitude | pressure`):
+```json
+{ "cases": [
+    { "input_type": "altitude", "value_ft": 35000 },
+    { "input_type": "pressure", "value_psf": 499.34 }
+] }
+```
 
 ## Atmospheric model CSV
 
-Files live in `./instance/` and are selected at startup. Two models ship:
-- `standard_atmos.csv` — custom model
+Files in `./instance/` (selected at startup). Two models ship:
+- `standard_atmos.csv` — based on Nelson "Flight Stability and Automatic Control"
 - `standard_atmos_1976.csv` — US Standard Atmosphere 1976 (generated by `tools/gen_ussa76.py`)
 
-Required CSV columns: `Hgeo_ft`, `H_ft`, `P_lb/ft2`, `pho/pho0`, `pho_slug/ft3`, `T_degR`. Lines starting with `#` are treated as comments.
+Required columns: `Hgeo_ft`, `H_ft`, `P_lb/ft2`, `pho/pho0`, `pho_slug/ft3`, `T_degR`. Lines starting with `#` are treated as comments.
 
-## Speed envelope JSON
+## Speed envelope JSON — `instance/*.json`
 
-JSON files in `./instance/*.json` define chart axis limits, grid lines, and speed envelope boundaries. See `instance/speed_envelope_example.json` for the full schema. Key structure:
-- `chart` — axis min/max for each speed type and altitude
-- `mach_grid`, `kcas_grid`, `keas_grid`, `ktas_grid` — grid line values
-- `envelope_boundaries` — list of boundaries, each with `segments` of `{type, value}` where type is `mach|keas|kcas|ktas`. Intersection altitudes between segments are computed automatically via binary search in KEAS space.
+Passed to speed-altitude chart functions. Key structure:
+- `chart` — axis min/max overrides (overrides `config/defaults.json`)
+- `mach_grid`, `kcas_grid`, `keas_grid`, `ktas_grid` — grid line overrides
+- `envelope_boundaries` — list of boundaries with `segments` of `{type, value}` where type is `mach|keas|kcas|ktas`. Intersection altitudes are computed automatically via binary search in KEAS space.
 
-The legacy `speed_limits` key is still supported but `envelope_boundaries` with segments is preferred.
+The legacy `speed_limits` key is still accepted for backward compatibility.
