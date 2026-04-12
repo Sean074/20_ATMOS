@@ -4,7 +4,7 @@
 
 # Linear
 M_FT = 3.28084
-FT_M = 1 / 3.28084
+FT_M = 1 / M_FT
 
 # Pressure
 PSI_PSF =  12 * 12
@@ -17,5 +17,4 @@ BAR_PSF = 2088.545633
 PSF_BAR = 1 / BAR_PSF
 
 # Speed
-# TODO get the actual conversion for m/s to kts.
 MS_KTS = 1.94384

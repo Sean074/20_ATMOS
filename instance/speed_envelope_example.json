@@ -38,7 +38,7 @@
         {
             "label": "Vd/Md",
             "color": "red",
-            "linewidth": 1.5,
+            "linewidth": 2.5,
             "linestyle": "--",
             "alt_ceiling": 43100,
             "alt_floor": 0,
