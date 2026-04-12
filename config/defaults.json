@@ -1,0 +1,29 @@
+{
+    "_comment": "ATMOS application defaults. Edit these values to change behaviour without touching code.",
+
+    "chart_defaults": {
+        "alt_min_ft": 0,
+        "alt_max_ft": 46000,
+        "ktas": { "x_min": 80, "x_max": 600 },
+        "kcas": { "x_min": 80, "x_max": 500 },
+        "keas": { "x_min": 80, "x_max": 500 },
+        "mach_grid":  [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.84, 0.88, 0.92],
+        "kcas_grid":  [100, 150, 200, 250, 300, 350, 400],
+        "keas_grid":  [100, 150, 200, 250, 300, 350, 400],
+        "ktas_grid":  [100, 150, 200, 250, 300, 350, 400, 450, 500],
+        "n_altitude_points": 300
+    },
+
+    "solver": {
+        "intersection_tolerance_ft":    1.0,
+        "intersection_max_iterations":  60,
+        "intersection_early_exit_keas": 0.05,
+        "vcas_super_initial_delta_kts": 10.0,
+        "vcas_super_error_percent":     0.001,
+        "mach_super_initial_delta":     0.1,
+        "mach_super_error_percent":     0.001
+    },
+
+    "data_dir": "./data",
+    "log_file": "./data/outputs/AtmosLog.txt"
+}

@@ -62,6 +62,7 @@ import matplotlib.ticker as ticker
 from matplotlib.lines import Line2D
 
 import atmos
+from config import APP_CONFIG
 
 
 # ---------------------------------------------------------------------------
@@ -165,13 +166,18 @@ def _seg_to_keas(seg_type, seg_value, alt_ft):
         return None
 
 
-def _find_intersection_alt(type1, val1, type2, val2, alt_low, alt_high, tol=1.0):
+def _find_intersection_alt(type1, val1, type2, val2, alt_low, alt_high):
     """
     Binary-search for the altitude where two speed limits are equal (compared in KEAS).
 
     Returns the intersection altitude, or None if no sign change is found in the
     search interval (meaning the two limits do not cross within the given range).
+    Tolerance and iteration limits are read from config/defaults.json.
     """
+    solver = APP_CONFIG["solver"]
+    tol       = solver["intersection_tolerance_ft"]
+    max_iter  = solver["intersection_max_iterations"]
+    early_exit = solver["intersection_early_exit_keas"]
     guard = 100  # stay clear of CSV altitude boundaries
 
     def diff(alt):
@@ -192,14 +198,14 @@ def _find_intersection_alt(type1, val1, type2, val2, alt_low, alt_high, tol=1.0)
     if d_lo * d_hi > 0:
         return None  # no sign change → limits do not cross in this range
 
-    for _ in range(60):
+    for _ in range(max_iter):
         if hi - lo < tol:
             break
         mid = (lo + hi) / 2
         d_mid = diff(mid)
         if d_mid is None:
             break
-        if abs(d_mid) < 0.05:
+        if abs(d_mid) < early_exit:
             return mid
         if d_lo * d_mid <= 0:
             hi = mid
@@ -335,22 +341,24 @@ def _plot_chart(x_type, envelope_json=None):
     cfg = _DEFAULTS[x_type]
     conv = _CONVERTERS[x_type]
 
-    # ---- defaults ----
-    x_min   = cfg['x_min']
-    x_max   = cfg['x_max']
-    alt_min = 0
-    alt_max = 46000
+    # ---- defaults from config (overridden by envelope JSON if provided) ----
+    app_cd  = APP_CONFIG["chart_defaults"]
+    x_min   = app_cd[x_type]['x_min']
+    x_max   = app_cd[x_type]['x_max']
+    alt_min = app_cd['alt_min_ft']
+    alt_max = app_cd['alt_max_ft']
     max_alt_ceiling     = None
     chart_title         = cfg['title']
 
-    mach_grid           = [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.84, 0.88, 0.92]
-    kcas_grid           = [100, 150, 200, 250, 300, 350, 400]
-    keas_grid           = [100, 150, 200, 250, 300, 350, 400]
-    ktas_grid           = [100, 150, 200, 250, 300, 350, 400, 450, 500]
+    mach_grid           = app_cd['mach_grid']
+    kcas_grid           = app_cd['kcas_grid']
+    keas_grid           = app_cd['keas_grid']
+    ktas_grid           = app_cd['ktas_grid']
+    n_pts               = app_cd['n_altitude_points']
     speed_limits        = []        # legacy
     envelope_boundaries = []        # new segment-based boundaries
 
-    # ---- load JSON ----
+    # ---- load JSON (overrides config defaults) ----
     if envelope_json:
         with open(envelope_json) as f:
             envelope = json.load(f)
@@ -372,7 +380,7 @@ def _plot_chart(x_type, envelope_json=None):
     # Append chart type to title so each window is identifiable
     chart_title = f'{chart_title} — {x_type.upper()}'
 
-    alts = np.linspace(alt_min + 50, alt_max - 50, 300)
+    alts = np.linspace(alt_min + 50, alt_max - 50, n_pts)
 
     # ---- figure ----
     fig, ax = plt.subplots(figsize=(13, 9))

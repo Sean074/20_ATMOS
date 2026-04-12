@@ -1,0 +1,10 @@
+{
+    "_comment": "Atmospheric property cases. input_type: altitude | pressure. value_ft or value_psf.",
+    "cases": [
+        { "input_type": "altitude", "value_ft":  5000 },
+        { "input_type": "altitude", "value_ft":  10000 },
+        { "input_type": "altitude", "value_ft":  20000 },
+        { "input_type": "altitude", "value_ft":  35000 },
+        { "input_type": "pressure", "value_psf": 499.34 }
+    ]
+}

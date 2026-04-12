@@ -1,0 +1,10 @@
+# Application dependencies
+matplotlib>=3.9
+numpy>=2.0
+pandas>=2.2
+prompt_toolkit>=3.0
+rich>=14.0
+
+# Notebook / tools dependencies (tools/atmos_methods.ipynb)
+ipykernel>=6.29
+plotly>=5.24

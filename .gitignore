@@ -1,6 +1,6 @@
 scrap*
 speed_alt_data.csv
-*.txt
+*.log
 
 # Environments
 .env
