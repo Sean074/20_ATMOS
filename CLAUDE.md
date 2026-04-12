@@ -1,94 +1,48 @@
-# ATMOS — Atmospheric Properties Calculator
+# CLAUDE.md
 
-A Terminal User Interface (TUI) for computing standard atmosphere properties and airspeed conversions. Intended for aerospace/flight test use.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Running the Program
-
-```bash
-python main.py
-```
-
-Must be run from the project root (the directory containing `main.py`), because `atmos.py` loads data from the relative path `./instance/standard_atmos.csv`.
-
-### Environment
-
-Python 3.9 virtualenv at `.venv/`. Activate before running:
+## Running the application
 
 ```bash
 source .venv/bin/activate
+python main.py
 ```
 
-Key dependencies: `pandas`, `numpy`, `prompt_toolkit`, `rich`.
+The app opens an interactive TUI. On startup it prompts to select an atmospheric model CSV from `./instance/`. Then a menu lets you compute atmospheric properties, convert airspeeds, and generate speed-altitude charts.
 
-## Project Structure
+## Architecture
 
-| File | Purpose |
-|---|---|
-| `main.py` | Entry point. Renders menu with Rich, dispatches selections via prompt_toolkit. |
-| `menu.py` | One function per menu option. Calls `ui` for input/output, calls `atmos.py` for math. |
-| `atmos.py` | Core atmosphere and airspeed math only — no print calls. Interpolates from `instance/standard_atmos.csv`. |
-| `ui.py` | All user-facing I/O: `prompt_float()`, `ask_unit()`, `print_atmos()`, `print_speed()`. Uses `prompt_toolkit` for input and `Rich` for output. |
-| `unit_convert.py` | Unit conversion constants (imperial base units internally). |
-| `logger.py` | Stub — not yet implemented. |
-| `plot_speed_alt.py` | Stub — speed/altitude chart generation, not yet implemented. |
-| `scrap.py` | Working scratch script for speed-altitude chart development (not part of the TUI). |
-| `atmos.ipynb` | Jupyter notebook companion for exploration. |
-| `instance/standard_atmos.csv` | Tabular standard atmosphere data (source of truth for interpolation). |
-| `AtmosLog.txt` | Output log file written by the program. |
+The codebase has a clean layered structure:
 
-## Internal Units
+- **`atmos.py`** — Core computation engine. Reads a CSV atmospheric model (via `set_atmos_model(path)`) and exposes:
+  - `get_atmos_prop_alt(h_press_ft)` / `get_atmos_prop_pres(p_press_psf)` — atmospheric properties at altitude/pressure
+  - `mach_alt()`, `tas_alt()`, `eas_alt()`, `cas_alt()` — airspeed conversions returning `{Mach, ktas, keas, kcas, q_c}`
+  - Supersonic solvers `mach_super()` / `vcas_super()` using binary-search iteration
 
-All calculations use imperial units internally:
+- **`unit_convert.py`** — Pure conversion constants (no functions). Import as `import unit_convert as u_c` and use e.g. `u_c.M_FT`, `u_c.MS_KTS`.
 
-- Altitude: **feet (ft)**
-- Pressure: **pounds per square foot (psf)**
-- Density: **slug/ft³**
-- Temperature: **degrees Rankine (°R)**
-- Speed: **knots (kts)**
+- **`ui.py`** — Rich/prompt_toolkit display layer. Exposes `console` (Rich Console), `prompt_float()`, `ask_unit()`, `select_model()`, `print_atmos()`, `print_speed()`.
 
-User input in metric (m, m/s, Pa, etc.) is converted to these base units before any calculation.
+- **`menu.py`** — Wires UI inputs to `atmos.py` computations. Each menu option is one function (e.g. `alt_mach()`, `speed_alt_ktas()`). Also handles envelope JSON selection for charts.
 
-## TUI Layer (prompt_toolkit + Rich)
+- **`main.py`** — Entry point. Defines the menu display string and dispatch dict, runs the REPL loop.
 
-The UI layer lives entirely in `ui.py`. `atmos.py` contains no `print()` calls.
+- **`plot_speed_alt.py`** — Matplotlib chart generator. Three public functions (`plot_speed_alt_ktas/kcas/keas`) all delegate to `_plot_chart(x_type)`. Draws constant Mach (gray), KCAS (steelblue), KEAS (seagreen), and KTAS (coral) grid lines, plus optional speed envelope boundaries from JSON.
 
-- **`ui.prompt_float(prompt_text)`** — prompts for a number with inline validation via `prompt_toolkit`; re-prompts on non-numeric input without crashing.
-- **`ui.ask_unit(prompt_text, valid_choices)`** — prompts for a unit string with tab-completion via `prompt_toolkit`'s `WordCompleter`; re-prompts on invalid input.
-- **`ui.print_atmos(point_in_sky)`** — renders atmospheric properties in a Rich `Panel`/`Table`.
-- **`ui.print_speed(speeds)`** — renders speed conversion results in a Rich `Panel`/`Table`.
-- **`ui.console`** — module-level `rich.console.Console` instance; use `ui.console.print()` anywhere Rich markup is needed outside `ui.py`.
+## Atmospheric model CSV
 
-In `main.py`, the menu is rendered with Rich and the selection prompt uses `prompt_toolkit` with a `WordCompleter` over the valid menu keys. `KeyboardInterrupt` (Ctrl+C) and `EOFError` (Ctrl+D) are caught at both the menu level and within each menu function, so the user can abort an in-progress calculation gracefully.
+Files live in `./instance/` and are selected at startup. Two models ship:
+- `standard_atmos.csv` — custom model
+- `standard_atmos_1976.csv` — US Standard Atmosphere 1976 (generated by `tools/gen_ussa76.py`)
 
-## Key Physics / Implementation Notes
+Required CSV columns: `Hgeo_ft`, `H_ft`, `P_lb/ft2`, `pho/pho0`, `pho_slug/ft3`, `T_degR`. Lines starting with `#` are treated as comments.
 
-- Atmospheric properties (pressure, density, temperature) are looked up by **linear interpolation** from the CSV table, not from closed-form equations.
-- Speed conversions handle both **subsonic and supersonic** regimes:
-  - Subsonic dynamic pressure: `q = p_static * ((1 + 0.2*M²)^(7/2) - 1)`
-  - Supersonic dynamic pressure uses the Rayleigh Pitot formula.
-  - `vcas_super()` and `mach_super()` in `atmos.py` use an iterative marching/bracketing solver for the supersonic CAS and Mach back-calculations.
-- Sea-level speed of sound reference: `a_0 = 661.4745 kts`
-- Sea-level pressure reference: read from CSV at `Hgeo_ft == 0`
-- `GAMMA = 1.4` (ratio of specific heats for air) — currently defined inside each function (TODO: hoist to module-level constant).
+## Speed envelope JSON
 
-## Known TODOs
+JSON files in `./instance/*.json` define chart axis limits, grid lines, and speed envelope boundaries. See `instance/speed_envelope_example.json` for the full schema. Key structure:
+- `chart` — axis min/max for each speed type and altitude
+- `mach_grid`, `kcas_grid`, `keas_grid`, `ktas_grid` — grid line values
+- `envelope_boundaries` — list of boundaries, each with `segments` of `{type, value}` where type is `mach|keas|kcas|ktas`. Intersection altitudes between segments are computed automatically via binary search in KEAS space.
 
-- **`atmos.py`**: `GAMMA = 1.4` and `a_0 = 661.4745` are repeated inside every speed function — should be hoisted to module-level constants.
-- **`atmos.py`**: `a_0` is hardcoded rather than derived from the CSV data at `Hgeo_ft == 0` (same for `p_0` which is already read from CSV but `a_0` is not).
-- **`logger.py`**: Completely unimplemented; log saving referenced in `main.py` TODO is not yet wired up.
-- **Speed-altitude chart menu options** (3.1, 3.2, 3.3): Functions in `menu.py` are stubs (`pass`).
-
-## Menu Options
-
-```
-1.1  Atmospheric properties given pressure altitude (m or ft input)
-1.2  Atmospheric properties given static pressure (psf/psi/Pa/atm/bar/ft/m input)
-2.1  Speed conversion given altitude + Mach
-2.2  Speed conversion given altitude + KTAS
-2.3  Speed conversion given altitude + KCAS
-2.4  Speed conversion given altitude + KEAS
-3.1  Speed-altitude chart: KTAS vs Alt      [in development]
-3.2  Speed-altitude chart: KCAS vs Alt      [in development]
-3.3  Speed-altitude chart: KEAS vs Alt      [in development]
-q    Quit
-```
+The legacy `speed_limits` key is still supported but `envelope_boundaries` with segments is preferred.

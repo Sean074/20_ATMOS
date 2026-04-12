@@ -1,0 +1,59 @@
+{
+    "name": "Example 777 Speed Envelope",
+    "chart": {
+        "ktas_min": 80,
+        "ktas_max": 600,
+        "kcas_min": 80,
+        "kcas_max": 450,
+        "keas_min": 80,
+        "keas_max": 450,
+        "alt_min": 0,
+        "alt_max": 46000
+    },
+    "max_altitude_ft": 43100,
+    "mach_grid": [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.84, 0.88, 0.92, 0.96],
+    "kcas_grid": [100, 150, 200, 250, 300, 350, 400],
+    "keas_grid": [100, 150, 200, 250, 300, 350, 400],
+    "envelope_boundaries": [
+        {
+            "label": "Vmo/Mmo",
+            "color": "black",
+            "linewidth": 2.5,
+            "linestyle": "-",
+            "alt_ceiling": 43100,
+            "alt_floor": 0,
+            "segments": [
+                {
+                    "type": "mach",
+                    "value": 0.89,
+                    "label": "Mmo"
+                },
+                {
+                    "type": "keas",
+                    "value": 360,
+                    "label": "Vmo"
+                }
+            ]
+        },
+        {
+            "label": "Vd/Md",
+            "color": "red",
+            "linewidth": 2.5,
+            "linestyle": "--",
+            "alt_ceiling": 43100,
+            "alt_floor": 0,
+            "segments": [
+                {
+                    "type": "mach",
+                    "value": 0.96,
+                    "label": "Md"
+                },
+                {
+                    "type": "keas",
+                    "value": 385,
+                    "label": "Vd"
+                }
+            ]
+        }
+    ]
+}
