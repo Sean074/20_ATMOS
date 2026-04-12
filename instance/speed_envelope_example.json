@@ -14,38 +14,46 @@
     "mach_grid": [0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.84, 0.88, 0.92, 0.96],
     "kcas_grid": [100, 150, 200, 250, 300, 350, 400],
     "keas_grid": [100, 150, 200, 250, 300, 350, 400],
-    "speed_limits": [
+    "envelope_boundaries": [
         {
-            "label": "Vmo",
-            "type": "keas",
-            "value": 360,
+            "label": "Vmo/Mmo",
             "color": "black",
             "linewidth": 2.5,
-            "linestyle": "-"
+            "linestyle": "-",
+            "alt_ceiling": 43100,
+            "alt_floor": 0,
+            "segments": [
+                {
+                    "type": "mach",
+                    "value": 0.89,
+                    "label": "Mmo"
+                },
+                {
+                    "type": "keas",
+                    "value": 360,
+                    "label": "Vmo"
+                }
+            ]
         },
         {
-            "label": "Mmo = 0.89",
-            "type": "mach",
-            "value": 0.89,
-            "color": "black",
-            "linewidth": 2.5,
-            "linestyle": "-"
-        },
-        {
-            "label": "Vd",
-            "type": "keas",
-            "value": 385,
+            "label": "Vd/Md",
             "color": "red",
             "linewidth": 1.5,
-            "linestyle": "--"
-        },
-        {
-            "label": "Md = 0.96",
-            "type": "mach",
-            "value": 0.96,
-            "color": "red",
-            "linewidth": 1.5,
-            "linestyle": "--"
+            "linestyle": "--",
+            "alt_ceiling": 43100,
+            "alt_floor": 0,
+            "segments": [
+                {
+                    "type": "mach",
+                    "value": 0.96,
+                    "label": "Md"
+                },
+                {
+                    "type": "keas",
+                    "value": 385,
+                    "label": "Vd"
+                }
+            ]
         }
     ]
 }
