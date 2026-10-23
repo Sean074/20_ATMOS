@@ -136,7 +136,7 @@ A_0_KTS  = 661.4745       # sea-level speed of sound
 P_0_PSF  = 2116.224       # sea-level static pressure
 ```
 
-Tunable solver parameters belong in `config/defaults.json`, not as
+Tunable solver parameters belong in `src/atmos/defaults.json`, not as
 module-level constants.
 
 ---

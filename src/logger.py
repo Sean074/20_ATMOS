@@ -3,7 +3,7 @@ import datetime
 import logging
 import pathlib
 
-from config import APP_CONFIG
+from atmos.config import APP_CONFIG
 
 _LOG_PATH = pathlib.Path(APP_CONFIG["log_file"])
 

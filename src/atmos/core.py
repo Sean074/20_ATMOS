@@ -1,6 +1,13 @@
+import contextlib
+import contextvars
+import functools
+import math
+import pathlib
+
 import pandas as pd
 import numpy as np
-import math
+
+from .config import APP_CONFIG
 
 
 # ---------------------------------------------------------------------------
@@ -13,23 +20,61 @@ class AtmosRangeError(ValueError):
 
 # ---------------------------------------------------------------------------
 # Physical constants — do not edit; these are thermodynamic facts, not settings.
-# Tunable solver parameters live in config/defaults.json.
+# Tunable solver parameters live in defaults.json.
 # ---------------------------------------------------------------------------
 GAMMA = 1.4           # ratio of specific heats for dry air
 A_0_KTS = 661.4745    # sea-level speed of sound, knots (ISA)
 P_0_PSF = 2116.224    # sea-level reference pressure, psf (ISA)
 _KTS_FACTOR = 0.5924838  # converts sqrt(psf / (slug/ft³)) → knots
 
-_atmos_csv_path = './instance/standard_atmos.csv'
+
+# ---------------------------------------------------------------------------
+# Atmospheric model selection
+#   The active model is held in a context variable, not a plain global, so
+#   concurrent callers (e.g. web requests on separate threads) each see the
+#   model they selected. The TUI just calls set_atmos_model() once at startup.
+# ---------------------------------------------------------------------------
+
+_PACKAGE_DIR = pathlib.Path(__file__).parent
+MODELS_DIR = _PACKAGE_DIR / "data" / "models"
+ENVELOPES_DIR = _PACKAGE_DIR / "data" / "envelopes"
+
+_atmos_csv_path = contextvars.ContextVar(
+    "atmos_csv_path", default=str(MODELS_DIR / "standard_atmos.csv")
+)
+
+
+def list_models():
+    """Return {file name: path} for the atmospheric model CSVs shipped with the package."""
+    return {p.name: str(p) for p in sorted(MODELS_DIR.glob("*.csv"))}
+
+
+def list_envelopes():
+    """Return {file name: path} for the speed envelope JSONs shipped with the package."""
+    return {p.name: str(p) for p in sorted(ENVELOPES_DIR.glob("*.json"))}
 
 
 def set_atmos_model(path):
-    global _atmos_csv_path
-    _atmos_csv_path = path
+    _atmos_csv_path.set(str(path))
+
+
+@contextlib.contextmanager
+def use_model(path):
+    """Use the model CSV at *path* for calls made inside the with-block."""
+    token = _atmos_csv_path.set(str(path))
+    try:
+        yield
+    finally:
+        _atmos_csv_path.reset(token)
+
+
+@functools.lru_cache(maxsize=None)
+def _read_model(path):
+    return pd.read_csv(path, comment="#")
 
 
 def select_atmos_data():
-    return pd.read_csv(_atmos_csv_path, comment="#")
+    return _read_model(_atmos_csv_path.get())
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +158,6 @@ def get_atmos_prop_pres(p_press_psf):
 
 def vcas_super(q_c):
     """VCAS (kts) from compressible dynamic pressure — supersonic only (VCAS > Mach 1)."""
-    from config import APP_CONFIG
     cfg = APP_CONFIG["solver"]
     delta = cfg["vcas_super_initial_delta_kts"]
     error_percent = cfg["vcas_super_error_percent"]
@@ -145,7 +189,6 @@ def vcas_super(q_c):
 
 def mach_super(q_c, p_static):
     """Mach from compressible dynamic pressure — supersonic only (Mach > 1)."""
-    from config import APP_CONFIG
     cfg = APP_CONFIG["solver"]
     delta = cfg["mach_super_initial_delta"]
     error_percent = cfg["mach_super_error_percent"]

@@ -6,6 +6,10 @@ Three public entry points share one generic implementation:
   plot_speed_alt_kcas(envelope_json)   — x-axis: KCAS
   plot_speed_alt_keas(envelope_json)   — x-axis: KEAS
 
+Each opens a pyplot window.  To render without pyplot (e.g. a web server),
+call draw_speed_alt(fig, x_type, envelope_json) with a matplotlib Figure and
+save it yourself.
+
 All three draw a grid of:
   - Constant Mach lines     (gray, solid)
   - Constant KCAS lines     (steel-blue, solid)
@@ -57,12 +61,13 @@ Legacy "speed_limits" key is still accepted for backward compatibility.
 import json
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.lines import Line2D
 
-import atmos
-from config import APP_CONFIG
+from . import core as atmos
+from .config import APP_CONFIG
+
+FIGSIZE_IN = (13, 9)
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +177,7 @@ def _find_intersection_alt(type1, val1, type2, val2, alt_low, alt_high):
 
     Returns the intersection altitude, or None if no sign change is found in the
     search interval (meaning the two limits do not cross within the given range).
-    Tolerance and iteration limits are read from config/defaults.json.
+    Tolerance and iteration limits are read from defaults.json.
     """
     solver = APP_CONFIG["solver"]
     tol       = solver["intersection_tolerance_ft"]
@@ -329,9 +334,9 @@ def _plot_boundary(ax, boundary, x_type, x_min, x_max, alt_min, alt_max, n_pts=3
 # Generic chart engine
 # ---------------------------------------------------------------------------
 
-def _plot_chart(x_type, envelope_json=None):
+def draw_speed_alt(fig, x_type, envelope_json=None):
     """
-    Internal chart renderer.
+    Draw a speed-altitude chart onto *fig* (a matplotlib Figure).
 
     x_type : 'ktas' | 'kcas' | 'keas'
         Determines which airspeed is placed on the x-axis.
@@ -383,7 +388,7 @@ def _plot_chart(x_type, envelope_json=None):
     alts = np.linspace(alt_min + 50, alt_max - 50, n_pts)
 
     # ---- figure ----
-    fig, ax = plt.subplots(figsize=(13, 9))
+    ax = fig.subplots()
     ax.set_facecolor('#f8f8f8')
 
     def _in_bounds(xs, ys):
@@ -546,24 +551,30 @@ def _plot_chart(x_type, envelope_json=None):
         ))
     ax.legend(handles=legend_elements, loc='upper left', fontsize=9, framealpha=0.85)
 
-    plt.tight_layout()
-    plt.show()
+    fig.tight_layout()
 
 
 # ---------------------------------------------------------------------------
 # Public entry points
 # ---------------------------------------------------------------------------
 
+def _show_chart(x_type, envelope_json):
+    import matplotlib.pyplot as plt  # only the interactive entry points need pyplot
+    fig = plt.figure(figsize=FIGSIZE_IN)
+    draw_speed_alt(fig, x_type, envelope_json)
+    plt.show()
+
+
 def plot_speed_alt_ktas(envelope_json=None):
     """Altitude vs KTAS chart."""
-    _plot_chart('ktas', envelope_json)
+    _show_chart('ktas', envelope_json)
 
 
 def plot_speed_alt_kcas(envelope_json=None):
     """Altitude vs KCAS chart (matches the 777-style V_CAS diagram)."""
-    _plot_chart('kcas', envelope_json)
+    _show_chart('kcas', envelope_json)
 
 
 def plot_speed_alt_keas(envelope_json=None):
     """Altitude vs KEAS chart."""
-    _plot_chart('keas', envelope_json)
+    _show_chart('keas', envelope_json)

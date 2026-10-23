@@ -1,8 +1,8 @@
-"""Thin loader for config/defaults.json.  Import APP_CONFIG from here."""
+"""Thin loader for defaults.json (next to this file).  Import APP_CONFIG from here."""
 import json
 import pathlib
 
-_CONFIG_PATH = pathlib.Path(__file__).parent.parent / "config" / "defaults.json"
+_CONFIG_PATH = pathlib.Path(__file__).parent / "defaults.json"
 
 # Hardcoded fallback used only if defaults.json is missing.
 _FALLBACK = {

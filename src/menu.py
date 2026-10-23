@@ -3,9 +3,9 @@ import json
 import atmos
 import ui
 import logger
-import plot_speed_alt
-import unit_convert as u_c
-from config import APP_CONFIG
+from atmos import plot_speed_alt
+from atmos import unit_convert as u_c
+from atmos.config import APP_CONFIG
 
 _DATA_DIR = APP_CONFIG["data_dir"]
 
@@ -234,21 +234,21 @@ def speed_from_file():
 # ---------------------------------------------------------------------------
 
 def speed_alt_ktas():
-    envelope_path = ui.select_envelope_file(_DATA_DIR)
+    envelope_path = ui.select_envelope_file(atmos.ENVELOPES_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_ktas(envelope_json=envelope_path)
     ui.press_enter_to_continue()
 
 
 def speed_alt_kcas():
-    envelope_path = ui.select_envelope_file(_DATA_DIR)
+    envelope_path = ui.select_envelope_file(atmos.ENVELOPES_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_kcas(envelope_json=envelope_path)
     ui.press_enter_to_continue()
 
 
 def speed_alt_keas():
-    envelope_path = ui.select_envelope_file(_DATA_DIR)
+    envelope_path = ui.select_envelope_file(atmos.ENVELOPES_DIR)
     ui.console.print("[cyan]Generating chart…[/cyan]")
     plot_speed_alt.plot_speed_alt_keas(envelope_json=envelope_path)
     ui.press_enter_to_continue()

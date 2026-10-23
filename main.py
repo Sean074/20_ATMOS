@@ -9,8 +9,7 @@ from rich.panel import Panel
 import atmos
 import menu
 import ui
-from config import APP_CONFIG
-from version import __version__, __author__
+from atmos import __version__, __author__
 
 _MENU_DISPLAY = """\
 [bold cyan]Atmospheric Properties[/bold cyan]
@@ -75,7 +74,7 @@ def menu_func():
 
 
 try:
-    model_path = ui.select_model(APP_CONFIG["data_dir"])
+    model_path = ui.select_model(atmos.MODELS_DIR)
 except (KeyboardInterrupt, EOFError):
     ui.console.print("\n[cyan]Bye.[/cyan]\n")
     raise SystemExit(0)
