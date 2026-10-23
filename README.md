@@ -28,13 +28,43 @@ pip install -r requirements.txt
 python main.py
 ```
 
-On startup, select an atmospheric model CSV from `data/models/`. The main menu then drives all operations.
+On startup, select an atmospheric model CSV from `src/atmos/data/models/`. The main menu then drives all operations.
+
+**3. Run the tests:**
+
+```bash
+python -m pytest
+```
+
+---
+
+## Using the engine as a package
+
+`src/atmos/` is an installable package (engine, charts, config, and the shipped models and envelopes; the TUI is not included):
+
+```bash
+pip install "atmos @ https://github.com/Sean074/20_ATMOS/archive/refs/tags/v1.1.0.tar.gz"
+```
+
+```python
+import atmos
+from atmos import plot_speed_alt
+from matplotlib.figure import Figure
+
+with atmos.use_model(atmos.list_models()["standard_atmos_1976.csv"]):
+    atmos.mach_alt(0.84, 35000)          # {Mach, ktas, keas, kcas, q_c}
+    fig = Figure(figsize=plot_speed_alt.FIGSIZE_IN)
+    plot_speed_alt.draw_speed_alt(fig, "kcas", atmos.list_envelopes()["speed_envelope_example.json"])
+    fig.savefig("chart.svg")
+```
+
+`use_model` is thread-safe and safe across async tasks, so separate requests can use different models at the same time.
 
 ---
 
 ## How it works
 
-All calculation inputs come from JSON files in `data/inputs/` — the TUI asks which file to run rather than prompting for individual values. Speed envelope JSON files in `data/envelopes/` configure chart axis ranges and boundary overlays.
+All calculation inputs come from JSON files in `data/inputs/` — the TUI asks which file to run rather than prompting for individual values. Speed envelope JSON files in `src/atmos/data/envelopes/` configure chart axis ranges and boundary overlays.
 
 Input file schemas and envelope JSON structure are documented in [CLAUDE.md](CLAUDE.md).
 
@@ -42,7 +72,7 @@ Input file schemas and envelope JSON structure are documented in [CLAUDE.md](CLA
 
 ## Atmospheric models
 
-Two models ship in `data/models/`:
+Two models ship in `src/atmos/data/models/`:
 
 | File | Source |
 |---|---|
@@ -53,7 +83,7 @@ Two models ship in `data/models/`:
 
 ## Configuration
 
-Edit `config/defaults.json` to adjust chart axis ranges, grid lines, and solver tolerances without touching code. See [CLAUDE.md](CLAUDE.md) for the key listing.
+Edit `src/atmos/defaults.json` to adjust chart axis ranges, grid lines, and solver tolerances without touching code. See [CLAUDE.md](CLAUDE.md) for the key listing.
 
 ---
 

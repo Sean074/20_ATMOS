@@ -46,9 +46,9 @@ def _select_file(directory, pattern, panel_title):
         console.print(f"[red]Invalid.[/red] Enter a number (1–{len(names)}) or filename.")
 
 
-def select_model(data_dir):
-    """Prompt the user to select an atmospheric model CSV."""
-    return _select_file(os.path.join(data_dir, "models"), "*.csv", "Select Atmospheric Model")
+def select_model(models_dir):
+    """Prompt the user to select an atmospheric model CSV from models_dir."""
+    return _select_file(models_dir, "*.csv", "Select Atmospheric Model")
 
 
 def select_input_file(data_dir):
@@ -56,9 +56,9 @@ def select_input_file(data_dir):
     return _select_file(os.path.join(data_dir, "inputs"), "*.json", "Select Input File")
 
 
-def select_envelope_file(data_dir):
-    """Prompt the user to optionally select a speed envelope JSON, or no envelope."""
-    json_files = sorted(glob.glob(os.path.join(data_dir, "envelopes", "*.json")))
+def select_envelope_file(envelopes_dir):
+    """Prompt the user to optionally select a speed envelope JSON from envelopes_dir, or no envelope."""
+    json_files = sorted(glob.glob(os.path.join(envelopes_dir, "*.json")))
     if not json_files:
         return None
 

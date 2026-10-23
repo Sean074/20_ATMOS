@@ -13,9 +13,13 @@ and why the structure is organised the way it is.
 2. **Single responsibility** — each module has one job; mixing concerns
    (e.g. computation inside display code) is a defect.
 3. **Configuration over constants** — tunable parameters live in
-   `config/defaults.json`; physics constants live in `atmos.py`.
+   `src/atmos/defaults.json`; physics constants live in `atmos/core.py`.
 4. **No framework magic** — explicit function calls, no decorators that hide
-   control flow, no global state beyond the model path and app config.
+   control flow, no global state beyond the selected model path (a context
+   variable, so concurrent callers stay independent) and app config.
+5. **Installable engine** — everything under `src/atmos/` is the `atmos`
+   package (`pyproject.toml`), usable without the TUI (e.g. by a web front-end).
+   It must never import `ui`, `menu`, `logger`, `rich` or `prompt_toolkit`.
 
 ---
 
@@ -31,26 +35,26 @@ and why the structure is organised the way it is.
 │  Presentation layer                            │
 │  src/ui.py          — display, prompts         │
 │  src/menu.py        — handler functions        │
-│  src/plot_speed_alt.py  — matplotlib charts    │
+│  src/atmos/plot_speed_alt.py — matplotlib charts │
 └──────────────────────┬─────────────────────────┘
                        │ calls
 ┌──────────────────────▼─────────────────────────┐
 │  Computation engine                            │
-│  src/atmos.py       — atmospheric model + solvers │
-│  src/unit_convert.py — conversion constants    │
+│  src/atmos/core.py  — atmospheric model + solvers │
+│  src/atmos/unit_convert.py — conversion constants │
 └──────────────────────┬─────────────────────────┘
                        │ reads
 ┌──────────────────────▼─────────────────────────┐
 │  Cross-cutting services                        │
-│  src/config.py      — settings loader          │
+│  src/atmos/config.py — settings loader         │
 │  src/logger.py      — result logger            │
 └──────────────────────┬─────────────────────────┘
                        │ reads / writes
 ┌──────────────────────▼─────────────────────────┐
 │  Data files                                    │
-│  config/defaults.json                          │
-│  data/models/*.csv      — atmospheric models   │
-│  data/envelopes/*.json  — speed envelopes      │
+│  src/atmos/defaults.json                       │
+│  src/atmos/data/models/*.csv    — atmos models │
+│  src/atmos/data/envelopes/*.json — envelopes   │
 │  data/inputs/*.json     — calculation cases    │
 │  data/outputs/          — generated artifacts  │
 └────────────────────────────────────────────────┘
@@ -64,30 +68,35 @@ and why the structure is organised the way it is.
 20_ATMOS/
 │
 ├── main.py                  # Entry point — startup, menu loop
+├── pyproject.toml           # Packages src/atmos/ as the installable `atmos` engine
 │
-├── src/                     # All application source modules
-│   ├── menu.py              # Presentation layer — menu handler functions
-│   ├── ui.py                # Presentation layer — display and prompt helpers
-│   ├── plot_speed_alt.py    # Presentation layer — speed-altitude charts
-│   ├── atmos.py             # Computation engine — atmospheric model and solvers
-│   ├── unit_convert.py      # Computation support — unit conversion constants
-│   ├── config.py            # Service — config file loader
-│   └── logger.py            # Service — append-mode CSV logger
-│
-├── config/
-│   └── defaults.json        # Tunable parameters (axis ranges, solver tolerances)
+├── src/
+│   ├── menu.py              # Presentation layer — menu handler functions (TUI only)
+│   ├── ui.py                # Presentation layer — display and prompt helpers (TUI only)
+│   ├── logger.py            # Service — append-mode CSV logger (TUI only)
+│   └── atmos/               # Installable package — engine, charts, config, shipped data
+│       ├── __init__.py      # Re-exports the public engine API
+│       ├── core.py          # Computation engine — atmospheric model and solvers
+│       ├── unit_convert.py  # Computation support — unit conversion constants
+│       ├── plot_speed_alt.py # Presentation layer — speed-altitude charts
+│       ├── config.py        # Service — config file loader
+│       ├── version.py       # __version__, __author__
+│       ├── defaults.json    # Tunable parameters (axis ranges, solver tolerances)
+│       └── data/
+│           ├── models/      # Atmospheric model CSVs (selected at startup)
+│           │   ├── standard_atmos.csv
+│           │   └── standard_atmos_1976.csv
+│           └── envelopes/   # Speed envelope JSON files
+│               └── speed_envelope_example.json
 │
 ├── data/
-│   ├── models/              # Atmospheric model CSVs (selected at startup)
-│   │   ├── standard_atmos.csv
-│   │   └── standard_atmos_1976.csv
-│   ├── envelopes/           # Speed envelope JSON files
-│   │   └── speed_envelope_example.json
-│   ├── inputs/              # Calculation case JSON files
+│   ├── inputs/              # Calculation case JSON files (TUI)
 │   │   ├── example_speed_cases.json
 │   │   └── example_atmos_cases.json
 │   └── outputs/             # Generated runtime artifacts (not committed)
 │       └── AtmosLog.txt
+│
+├── tests/                   # pytest — engine regression and chart rendering
 │
 ├── doc/                     # Authoritative coding standards
 │   ├── architecture.md      # This file
@@ -130,7 +139,8 @@ One function per menu item. Each handler follows the strict
 4. Display via `ui.print_*_table()` or `plot_speed_alt.*`.
 5. Call `ui.press_enter_to_continue()`.
 
-**Allowed to import:** `atmos`, `ui`, `logger`, `plot_speed_alt`, `config`
+**Allowed to import:** `atmos`, `ui`, `logger`, `atmos.plot_speed_alt`,
+`atmos.unit_convert`, `atmos.config`
 
 **Must not contain:** raw `print()`/`input()` calls, physics calculations, or
 direct file reads outside of JSON case iteration.
@@ -148,10 +158,14 @@ both `ui.py` and `menu.py`. See `doc/ui.md` for full conventions.
 
 ---
 
-### `plot_speed_alt.py` — Speed-altitude charts
+### `atmos/plot_speed_alt.py` — Speed-altitude charts
 
-Three public entry points — `plot_speed_alt_ktas`, `plot_speed_alt_kcas`,
-`plot_speed_alt_keas` — each delegates to `_plot_chart(x_type)`.
+`draw_speed_alt(fig, x_type, envelope_json=None)` draws the chart onto a
+matplotlib `Figure` the caller supplies, without touching pyplot — this is the
+entry point for non-interactive use (saving to SVG/PNG, web servers). Three TUI
+entry points — `plot_speed_alt_ktas`, `plot_speed_alt_kcas`,
+`plot_speed_alt_keas` — create a pyplot figure, call `draw_speed_alt`, and
+`plt.show()` it.
 
 Chart axis defaults come from `APP_CONFIG["chart_defaults"]`; a speed envelope
 JSON overrides them. Envelope boundary intersections are computed via binary
@@ -163,10 +177,14 @@ search in KEAS space.
 
 ---
 
-### `atmos.py` — Computation engine
+### `atmos/core.py` — Computation engine
 
-The core physics module. Loads an atmospheric model CSV at startup via
-`set_atmos_model(path)` and interpolates all atmospheric properties from it.
+The core physics module, re-exported as `atmos.*`. The active atmospheric model
+CSV is selected with `set_atmos_model(path)` (the TUI, once at startup) or the
+`use_model(path)` context manager (per call or request); it is held in a
+`contextvars.ContextVar`, so threads and async tasks each keep their own choice.
+Parsed CSVs are cached per path. `list_models()` / `list_envelopes()` return the
+shipped files, and `MODELS_DIR` / `ENVELOPES_DIR` point at them.
 
 Key public functions:
 
@@ -182,7 +200,7 @@ Key public functions:
 Raises `AtmosRangeError` (subclass of `ValueError`) when input is outside the
 loaded model's range.
 
-**Allowed to import:** `pandas`, `numpy`, `math`, `config` (solver params only),
+**Allowed to import:** `pandas`, `numpy`, stdlib, `config` (solver params only),
 `unit_convert`
 
 **Must not contain:** display logic, logging, or file-path assumptions beyond the
@@ -203,8 +221,8 @@ No functions, no imports. See `doc/analysis_code.md` for the full reference.
 
 ### `config.py` — Configuration loader
 
-Thin module. `from config import APP_CONFIG` returns the dict parsed from
-`config/defaults.json`. Falls back to hardcoded values if the file is missing.
+Thin module. `from atmos.config import APP_CONFIG` returns the dict parsed from
+`src/atmos/defaults.json`. Falls back to hardcoded values if the file is missing.
 
 **Must not contain:** application logic or direct knowledge of config keys.
 
@@ -227,14 +245,14 @@ Log path comes from `APP_CONFIG["log_file"]`.
 
 | Module | May import |
 |---|---|
-| `main.py` | `src/atmos`, `src/menu`, `src/ui`, `src/config` |
-| `src/menu.py` | `atmos`, `ui`, `logger`, `plot_speed_alt`, `config` |
+| `main.py` | `atmos`, `src/menu`, `src/ui` |
+| `src/menu.py` | `atmos`, `ui`, `logger`, `atmos.plot_speed_alt`, `atmos.unit_convert`, `atmos.config` |
 | `src/ui.py` | `rich`, `prompt_toolkit`, `config` |
-| `src/plot_speed_alt.py` | `atmos`, `config`, `unit_convert`, `matplotlib` |
-| `src/atmos.py` | `pandas`, `numpy`, `math`, `config`, `unit_convert` |
-| `src/logger.py` | `config` |
-| `src/config.py` | stdlib only (`json`, `pathlib`) |
-| `src/unit_convert.py` | nothing |
+| `src/logger.py` | `atmos.config` |
+| `src/atmos/plot_speed_alt.py` | `atmos.core`, `atmos.config`, `unit_convert`, `matplotlib` (pyplot only inside the TUI entry points) |
+| `src/atmos/core.py` | `pandas`, `numpy`, stdlib, `atmos.config`, `unit_convert` |
+| `src/atmos/config.py` | stdlib only (`json`, `pathlib`) |
+| `src/atmos/unit_convert.py` | nothing |
 
 No module in the computation layer (`atmos.py`, `unit_convert.py`) may import
 from the presentation layer (`ui.py`, `menu.py`, `plot_speed_alt.py`,
@@ -277,8 +295,8 @@ menu.py handler
 
 | Type | Location | Examples |
 |---|---|---|
-| Physics constants | `atmos.py` module-level | `GAMMA = 1.4`, `A_0_KTS`, `P_0_PSF` |
-| Tunable parameters | `config/defaults.json` | axis ranges, grid lines, solver tolerances |
+| Physics constants | `atmos/core.py` module-level | `GAMMA = 1.4`, `A_0_KTS`, `P_0_PSF` |
+| Tunable parameters | `src/atmos/defaults.json` | axis ranges, grid lines, solver tolerances |
 | Conversion factors | `unit_convert.py` | `M_FT`, `MS_KTS`, `PA_PSF` |
 
 Never move physics constants to config. Never hardcode conversion factors as
@@ -294,12 +312,12 @@ Add a menu handler in `menu.py`. Add a display function to `ui.py` if the
 output shape differs from existing tables.
 
 **New chart type:**
-Add a public entry point to `plot_speed_alt.py` that delegates to
-`_plot_chart(x_type)`. Add the menu item in `main.py`'s `MENU_OPTIONS` dict and
+Add a public entry point to `atmos/plot_speed_alt.py` that delegates to
+`_show_chart(x_type, envelope_json)`. Add the menu item in `main.py`'s `MENU_OPTIONS` dict and
 `_MENU_DISPLAY` string. Add a handler in `menu.py`.
 
 **New config parameter:**
-Add the key and default value to `config/defaults.json` with a comment. Read it
+Add the key and default value to `src/atmos/defaults.json` with a comment. Read it
 in the consuming module via `APP_CONFIG`. Do not add a new module-level
 constant.
 

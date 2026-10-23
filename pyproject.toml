@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atmos"
+dynamic = ["version"]
+description = "Standard atmosphere lookups, airspeed conversions and speed-altitude charts"
+authors = [{ name = "Sean O'Meara" }]
+readme = "README.md"
+requires-python = ">=3.9"
+# Engine + charts only. The TUI (main.py, src/ui.py, src/menu.py) is not part
+# of the installed package; install the [tui] extra to run it from a checkout.
+dependencies = [
+    "matplotlib>=3.9",
+    "numpy>=2.0",
+    "pandas>=2.2",
+]
+
+[project.optional-dependencies]
+tui = ["prompt_toolkit>=3.0", "rich>=14.0"]
+
+[tool.setuptools]
+packages = ["atmos"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.package-data]
+atmos = ["defaults.json", "data/models/*.csv", "data/envelopes/*.json"]
+
+[tool.setuptools.dynamic]
+version = { attr = "atmos.version.__version__" }
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
